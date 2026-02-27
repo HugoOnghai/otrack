@@ -2,7 +2,6 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Timelike}; // removed Datelike, wasn't used
 use hyprland::event_listener::EventListener;
 use otrack_core::{Config, DaemonRequest, DaemonResponse, SOCKET_PATH};
-use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -35,10 +34,12 @@ impl DaemonState {
         );
 
         // fire off the notify-send command with our two arguments and return the ExitStatus
-        let _ = Command::new("notify-send")
-            .arg("otrack")
-            .arg(message)
-            .status();
+        tokio::spawn(async move {
+            let _ = tokio::process::Command::new("notify-send")
+                .arg("Otrack: Take a break!")
+                .arg(message)
+                .spawn();
+        });
     }
 
     fn new(config: Config) -> Result<Self> {
